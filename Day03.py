@@ -1,14 +1,18 @@
 def x():
     s = ["staff", "potion", "spellbook"]
+
+    print("Portal transition activated!")
+
     a = input()
-    b =  s.pop(index = 0)
+    b = s.pop(0)
     s.append(a)
-    print(s)
-    
-    
+
+    print(f"Ejected oldest item: {b}")
+    print(f"Current items in the magic bag: {s}")
+
 
 def main():
-    
-    pass
+    x()
+
 
 main()
