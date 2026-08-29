@@ -89,7 +89,7 @@ def longest_palindrome():
     s = "babad"
     # s = input()
     max_length = 1
-    for a in range(1, len(s)):
+    for a in range(1, len(s)-1):
         b = a
         max_length_ = 1
         while s[a] == s[b] and a < len(s) and b > 0:
@@ -132,9 +132,9 @@ def group_anagram():
 
     
 def main():
-    group_anagram()
+    # group_anagram()
     # run_length_compression()
-    # longest_palindrome()
+    longest_palindrome()
     # name_anonymizer()
     # substr()
     # ciphr()
