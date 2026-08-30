@@ -1,3 +1,8 @@
+import os
+from pprint import pprint
+from subprocess import sys
+
+
 def x():
     s = ["staff", "potion", "spellbook"]
 
@@ -216,10 +221,34 @@ def snake_game():
           Yum! The snake ate the food!
           ```
     """
-    ...
+    try:
+        os.system("cls")
+        grid = [["."] * 5 for _ in range(5)]
 
+        for row in grid:
+            print(*row)
+
+        grid[1][2] = "F"
+
+        while True:
+            l = input().split()
+            x, y = [int(k) for k in l]
+            grid[x-1][y-1] = "S"
+            os.system("cls")
+            for row in grid:
+                print(*row)
+            grid[x-1][y-1] = "."
+            if x == 2 and y == 3:
+                print("Yum! The snake ate the food!")
+                break
+    except IndexError:
+        print("Bye! Snake left the board")
+    except:
+        print("Bye!")
+        
 
 def main():
+    snake_game()
     # elimination_game()
     # shopping_cart()
     # treasure()
