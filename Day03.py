@@ -1,6 +1,3 @@
-from tkinter import N
-
-
 def x():
     s = ["staff", "potion", "spellbook"]
 
@@ -128,14 +125,14 @@ def curvd():
 
 
 def treasure():
-    '''
-        ### Exercise 7: Treasure Map Coordinate Filter
-        **Scenario**: You have a list of coordinate pairs representing suspected treasure locations on a map: `coords = [[12, 5], [-3, 14], [8, -2], [15, 9], [-5, -6]]`. However, the treasure can only exist in the first quadrant of the map (where **both** the X coordinate and Y coordinate are strictly greater than zero (i.e., `x > 0` and `y > 0`)).
-        Write a program that uses a list comprehension to filter the list and print only the valid coordinates.
-        * **Hardcoded Input**: `coords = [[12, 5], [-3, 14], [8, -2], [15, 9], [-5, -6]]`
-        * **Sample Output**: `[[12, 5], [15, 9]]`
-    
-    '''
+    """
+    ### Exercise 7: Treasure Map Coordinate Filter
+    **Scenario**: You have a list of coordinate pairs representing suspected treasure locations on a map: `coords = [[12, 5], [-3, 14], [8, -2], [15, 9], [-5, -6]]`. However, the treasure can only exist in the first quadrant of the map (where **both** the X coordinate and Y coordinate are strictly greater than zero (i.e., `x > 0` and `y > 0`)).
+    Write a program that uses a list comprehension to filter the list and print only the valid coordinates.
+    * **Hardcoded Input**: `coords = [[12, 5], [-3, 14], [8, -2], [15, 9], [-5, -6]]`
+    * **Sample Output**: `[[12, 5], [15, 9]]`
+
+    """
     coordinates = [[12, 5], [-3, 14], [8, -2], [15, 9], [-5, -6]]
     Output = [
         coordinate
@@ -146,74 +143,95 @@ def treasure():
 
 
 def shopping_cart():
-    '''
+    """
     ### Exercise 8: De-duplicating Shopping Cart
         **Scenario**: An online shopping cart has duplicate items due to double-clicks: `["apple", "banana", "apple", "orange", "banana", "banana"]`. Write a program that processes the list and removes all duplicate items, **but keeps the first occurrence of each item in its original order**. Print the cleaned cart.
         * **Hardcoded Input**: `cart = ["apple", "banana", "apple", "orange", "banana", "banana"]`
         * **Sample Output**: `['apple', 'banana', 'orange']`
-    
+
         ---
-    '''
+    """
     cart = ["apple", "banana", "apple", "orange", "banana", "banana"]
     op = list({items for items in cart})
-    print(f'{op = }')
-    
+    print(f"{op = }")
+
+
 def elimination_game():
-    N=int(input())
-    k=int(input())
-    
+    N = int(input())
+    k = int(input())
+    """
+    ### Exercise 9: The Josephus Elimination Game
+        **Scenario**: A group of $N$ soldiers (numbered 1 to $N$) stand in a circle. Starting from the first soldier, every $K$-th soldier is eliminated from the circle. The count continues with the next remaining soldier, moving clockwise. This process repeats until only one soldier remains.
+        Write a program that prompts the user to enter $N$ (number of soldiers) and $K$ (elimination interval). Simulate the game using a list and print the order of eliminations and the final survivor.
+        * **Sample Input**: `N = 5`, `K = 2`
+        * **Sample Output**:
+          ```text
+          Soldier circle initialized: [1, 2, 3, 4, 5]
+          Eliminated soldier: 2 (Remaining: [1, 3, 4, 5])
+          Eliminated soldier: 4 (Remaining: [1, 3, 5])
+          Eliminated soldier: 1 (Remaining: [3, 5])
+          Eliminated soldier: 5 (Remaining: [3])
+          The sole survivor is: 3
+          ```
+    """
+    list_ = [x for x in range(1, N + 1)]
+    print(f"Soldier circle initialized: {list_}")
+    current_index = 0
+    while len(list_) > 1:
+        current_index = (current_index + k - 1) % len(list_)
+        f = list_.pop(current_index)
+        print(f"Eliminated soldier: {f} (Remaining: {list_})")
+        ...
+    print(f"The sole survivor is: {list_[0]}")
+
+
+def snake_game():
+    """
+    ### Exercise 10: Snake Game Board Renderer
+        **Scenario**: Render a simple 2D text game board. Write a program that performs the following steps in sequence:
+        1. Creates a $5 times 5$ grid filled with dots `"."` represented as a nested list.
+        2. Places a food item `"F"` at grid position `[2, 3]`.
+        3. Prompts the user to enter coordinate inputs: a `row` and a `col` (integers between 0 and 4) for the snake's head.
+        4. Places the snake's head `"S"` at the user-supplied coordinate `[row, col]`, overwriting the character at that position.
+        5. If the user-supplied coordinates are exactly `[2, 3]`, print the message `"Yum! The snake ate the food!"` (the snake `"S"` will occupy index `[2, 3]` on the printed board, overwriting the `"F"`).
+        6. Prints the grid neatly line-by-line (each row's elements separated by spaces).
+
+        * **Sample Input**: (User inputs Row `0` and Column `3`)
+        * **Sample Output**:
+          ```text
+          . . . S .
+          . . . . .
+          . . . F .
+          . . . . .
+          . . . . .
+          ```
+        * **Sample Input**: (User inputs Row `2` and Column `3`)
+        * **Sample Output**:
+          ```text
+          . . . . .
+          . . . . .
+          . . . S .
+          . . . . .
+          . . . . .
+          Yum! The snake ate the food!
+          ```
+    """
+    ...
+
 
 def main():
-    shopping_cart()
+    # elimination_game()
+    # shopping_cart()
     # treasure()
     """
-    
-    
+
+
 
     ## Part C: Difficult Complexity (2 Exercises)
 
-    ### Exercise 9: The Josephus Elimination Game
-    **Scenario**: A group of $N$ soldiers (numbered 1 to $N$) stand in a circle. Starting from the first soldier, every $K$-th soldier is eliminated from the circle. The count continues with the next remaining soldier, moving clockwise. This process repeats until only one soldier remains.
-    Write a program that prompts the user to enter $N$ (number of soldiers) and $K$ (elimination interval). Simulate the game using a list and print the order of eliminations and the final survivor.
-    * **Sample Input**: `N = 5`, `K = 2`
-    * **Sample Output**:
-      ```text
-      Soldier circle initialized: [1, 2, 3, 4, 5]
-      Eliminated soldier: 2 (Remaining: [1, 3, 4, 5])
-      Eliminated soldier: 4 (Remaining: [1, 3, 5])
-      Eliminated soldier: 1 (Remaining: [3, 5])
-      Eliminated soldier: 5 (Remaining: [3])
-      The sole survivor is: 3
-      ```
 
-    ### Exercise 10: Snake Game Board Renderer
-    **Scenario**: Render a simple 2D text game board. Write a program that performs the following steps in sequence:
-    1. Creates a $5 \times 5$ grid filled with dots `"."` represented as a nested list.
-    2. Places a food item `"F"` at grid position `[2, 3]`.
-    3. Prompts the user to enter coordinate inputs: a `row` and a `col` (integers between 0 and 4) for the snake's head.
-    4. Places the snake's head `"S"` at the user-supplied coordinate `[row, col]`, overwriting the character at that position.
-    5. If the user-supplied coordinates are exactly `[2, 3]`, print the message `"Yum! The snake ate the food!"` (the snake `"S"` will occupy index `[2, 3]` on the printed board, overwriting the `"F"`).
-    6. Prints the grid neatly line-by-line (each row's elements separated by spaces).
 
-    * **Sample Input**: (User inputs Row `0` and Column `3`)
-    * **Sample Output**:
-      ```text
-      . . . S .
-      . . . . .
-      . . . F .
-      . . . . .
-      . . . . .
-      ```
-    * **Sample Input**: (User inputs Row `2` and Column `3`)
-    * **Sample Output**:
-      ```text
-      . . . . .
-      . . . . .
-      . . . S .
-      . . . . .
-      . . . . .
-      Yum! The snake ate the food!
-      ```
+
     """
     # word_rev()
     # curvd()
