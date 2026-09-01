@@ -22,7 +22,6 @@ def validate_academic_email(email):
     else:
         return True
 
-def 
 
 def main():
     print(validate_academic_email("arham.khan@cdac.res.in"))  # Output: True
