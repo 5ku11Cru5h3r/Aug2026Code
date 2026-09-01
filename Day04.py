@@ -130,7 +130,6 @@ def register_contact(phonebook: dict, name, phone_input):
 
 
 def compile_feedback(ratings_dict):
-    
     """
 
     ### Assignment 3: Course Feedback Compiler & Sanitizer
@@ -154,6 +153,7 @@ def compile_feedback(ratings_dict):
     }
     ```
 
+
     #### Expected Output
     **Console Warnings Printed:**
     ```text
@@ -175,8 +175,214 @@ def compile_feedback(ratings_dict):
     ```
     """
 
+    result = {}
+    for sub, rating in ratings_dict.items():
+        valid = []
+        try:
+            for rate in rating:
+                value = float(rate)
+            valid.append(value)
+        except (TypeError, ValueError):
+            print(f"Invalid rating value '{rate}' in course '{sub}' skipped")
+
+    try:
+        avg = sum(valid) / len(valid)
+        result[sub] = round(avg, 2)
+    except ZeroDivisionError:
+        print(f"No valid ratings found for course '{sub}'. Rating set to 0.0")
+        result[sub] = 0.0
+    return result
+
+
+class ProductNotFoundError(Exception):
+    def __init__(self, product_id):
+        self.product_id = product_id
+        print(f"{self.product_id} is not present in the catalog")
+
+        ...
+
+
+class OutOfStockError(Exception):
+    def __init__(self, quantity=0):
+        self.quantity = quantity
+        print(f"The customer's ordered {self.quantity} exceeds the available stock")
+
+
+def process_order(catalog: dict, order: dict):
+    """
+        ### Assignment 4: Atomic E-Commerce Order Processor
+    #### Scenario
+    You are building an ordering subsystem for an online store. Orders containing multiple products must be processed **atomically**: either the entire order completes successfully, or the entire transaction fails. If one item in the order is out of stock or is unrecognized, no stock should be deducted for any other item (rollback).
+
+    #### Problem Description
+    1. Define two custom exceptions:
+    - `ProductNotFoundError` (raised when a product ID is not present in the catalog).
+    - `OutOfStockError` (raised when the customer's ordered quantity exceeds the available stock).
+    2. Write a function `process_order(catalog, order)`:
+    - `catalog` is a dictionary containing product database records. Format:
+        ```python
+        catalog = {
+            "P01": {"price": 100.0, "stock": 5},
+            "P02": {"price": 50.0, "stock": 2}
+        }
+        ```
+    - `order` is a dictionary containing product IDs (keys) and quantities ordered (values). Format: `{"P01": 2, "P02": 1}`.
+    - **Validation Phase**: Before modifying any inventory levels:
+        - Check if all ordered keys exist in the catalog. If a product ID does not exist, raise `ProductNotFoundError` with message: `"Product '<product_id>' not found in store catalog."`
+        - Check if the catalog contains sufficient stock for each item ordered. If the ordered quantity exceeds available stock, raise `OutOfStockError` with message: `"Product '<product_id>' is out of stock. Requested: <requested_qty>, Available: <available_stock>."`
+    - **Execution Phase**: If (and only if) all products pass validation:
+        - Deduct the ordered quantities from the stock numbers in the catalog dictionary.
+        - Calculate and return the total cost of the order (float).
+        - If an exception was raised during validation, the catalog must remain completely unchanged.
+
+    #### Example Walkthrough
+    ```python
+    catalog = {
+        "P01": {"price": 10.0, "stock": 5},
+        "P02": {"price": 20.0, "stock": 10}
+    }
+
+    # 1. Successful Order
+    total = process_order(catalog, {"P01": 2, "P02": 1})
+    # Returns: 40.0
+    # Catalog stock changes to: P01 stock = 3, P02 stock = 9
+
+    # 2. Failed Order (Triggers Rollback)
+    # Current Catalog: {"P01": {"price": 10.0, "stock": 3}, "P02": {"price": 20.0, "stock": 9}}
+    try:
+        total = process_order(catalog, {"P01": 2, "P02": 15})
+    except OutOfStockError as e:
+        print(e) # Output: Product 'P02' is out of stock. Requested: 15, Available: 9.
+
+    # Verify Catalog Stock: P01 must remain at 3 (NOT decreased to 1).
+    print(catalog["P01"]["stock"]) # Output: 3
+    ```
+    """
+    order_product = order.keys()
+    totall = 0
+    for order_id in list(order_product):
+        if catalog.get(order_id) == None:
+            raise ProductNotFoundError(order_id)
+        elif catalog.get(order_id).get("stock") < order.get(order_id):
+            raise OutOfStockError(order.get(order_id))
+        else:
+            catalog.update(
+                {
+                    order_id: {
+                        "price": catalog.get(order_id).get("price"),
+                        "stock": catalog.get(order_id).get("stock")
+                        - order.get(order_id),
+                    }
+                }
+            )
+            print(catalog)
+            totall += catalog.get(order_id).get("price") * order.get(order_id)
+    return float(totall)
+
+
+def traverse_nested_config(config_dict, path_str, default=None):
+    """
+        ### Assignment 5: Deep JSON/Configuration Key Traverser
+    #### Scenario
+    Configuration files loaded from JSON databases consist of nested dictionary hierarchies. Checking key existence at every level using nested conditions (`if key in dictionary`) leads to complex and verbose code. You need to write a clean traverser utility that navigates nested dictionaries using exceptions.
+
+    #### Problem Description
+    Write a function `traverse_nested_config(config_dict, path_str, default=None)`:
+    - `config_dict` is a nested dictionary configuration tree.
+    - `path_str` is a string specifying the configuration path using dot notation (e.g., `"server.database.port"`).
+    - The function should split the `path_str` on `.` characters and traverse down `config_dict`.
+    - **Implementation Constraint**: You **must** attempt to traverse keys directly. Do not use key-existence checks (like `if key in dict`) or class-checks (like `if isinstance(sub_dict, dict)`). Instead, handle the lookup path directly inside a `try` block and catch the following exceptions to return the `default` value:
+      - Catch `KeyError` if any key in the path does not exist.
+      - Catch `TypeError` or `AttributeError` if you try to index a primitive, non-dictionary value (e.g., trying to access a key like `"port"` on a configuration value that resolved to a string or number).
+    - If `path_str` is empty or `config_dict` is not a valid dictionary, return the `default` value.
+
+    #### Test Data & Test Cases
+    ```python
+    config = {
+        "server": {
+            "host": "127.0.0.1",
+            "port": 8080,
+            "ssl": {
+                "enabled": True,
+                "cert_path": "/etc/ssl/certs"
+            }
+        },
+        "database": "postgresql://localhost:5432"
+    }
+
+    # Test Case 1: Valid Path
+    print(traverse_nested_config(config, "server.ssl.cert_path"))
+    # Output: /etc/ssl/certs
+
+    # Test Case 2: Missing Key (Triggers KeyError)
+    print(traverse_nested_config(config, "server.database.username", "guest"))
+    # Output: guest
+
+    # Test Case 3: Indexing Non-Dictionary value (Triggers TypeError)
+    # Here config["database"] is a string, which cannot be indexed with "host"
+    print(traverse_nested_config(config, "database.host", "localhost"))
+    # Output: localhost
+    ```
+    """
+    l = path_str.split(".")
+    x = config_dict
+    for i in l:
+        try:
+            x = x.get(i)
+        except:
+            return default
+        # print(i, x ,sep="=="*5)
+    if x == None:
+        return default
+    else:
+        return x
+
+class AccountNotFoundError(Exception):
+    ...
+class OverdraftError(Exception):
+    ...
+class InvalidTransactionError(Exception):
+    ...
+    
+
 
 def main():
+    # config = {
+    #     "server": {
+    #         "host": "127.0.0.1",
+    #         "port": 8080,
+    #         "ssl": {"enabled": True, "cert_path": "/etc/ssl/certs"},
+    #     },
+    #     "database": "postgresql://localhost:5432",
+    # }
+    # print(traverse_nested_config(config, "server.ssl.cert_path"))
+    # Output: /etc/ssl/certs
+
+    # Test Case 2: Missing Key (Triggers KeyError)
+    # print(traverse_nested_config(config, "server.database.username", "guest"))
+    # Output: guest
+
+    # Test Case 3: Indexing Non-Dictionary value (Triggers TypeError)
+    # Here config["database"] is a string, which cannot be indexed with "host"
+    # print(traverse_nested_config(config, "database.host", "localhost"))
+    # Output: localhost
+    # catalog = {"P01": {"price": 10.0, "stock": 5}, "P02": {"price": 20.0, "stock": 10}}
+
+    # # 1. Successful Order
+    # total = process_order(catalog, {"P01": 2, "P02": 1})
+    # print(total)
+    # # Returns: 40.0
+    # # Catalog stock changes to: P01 stock = 3, P02 stock = 9
+
+    # # 2. Failed Order (Triggers Rollback)
+    # # Current Catalog: {"P01": {"price": 10.0, "stock": 3}, "P02": {"price": 20.0, "stock": 9}}
+    # try:
+    #     total = process_order(catalog, {"P01": 2, "P02": 15})
+    # except OutOfStockError as e:
+    #     print(e)  # Output: Product 'P02' is out of stock. Requested: 15, Available: 9.
+
+    # # Verify Catalog Stock: P01 must remain at 3 (NOT decreased to 1).
+    # print(catalog["P01"]["stock"])  # Output: 3
     # contacts = {}
     # contacts = register_contact(contacts, "Alice", "0987654321")
     # print(f"{contacts=}")
@@ -204,6 +410,13 @@ def main():
     # print(inventory)
     # inventory = manage_bookstore_inventory(inventory, "sell", "Learning AI", 5)
     # print(inventory)
+    # feedback_data = {
+    #         "Python Programming": [5, 4, "4", "Great", 5],
+    #         "Machine Learning": [],
+    #         "Deep Learning": ["Good", "Average", None]
+    #     }
+    # result = compile_feedback(feedback_data)
+    # print(result)
     ...
 
 
@@ -214,55 +427,6 @@ def main():
 
 ---
 
-### Assignment 4: Atomic E-Commerce Order Processor
-#### Scenario
-You are building an ordering subsystem for an online store. Orders containing multiple products must be processed **atomically**: either the entire order completes successfully, or the entire transaction fails. If one item in the order is out of stock or is unrecognized, no stock should be deducted for any other item (rollback).
-
-#### Problem Description
-1. Define two custom exceptions:
-   - `ProductNotFoundError` (raised when a product ID is not present in the catalog).
-   - `OutOfStockError` (raised when the customer's ordered quantity exceeds the available stock).
-2. Write a function `process_order(catalog, order)`:
-   - `catalog` is a dictionary containing product database records. Format:
-     ```python
-     catalog = {
-         "P01": {"price": 100.0, "stock": 5},
-         "P02": {"price": 50.0, "stock": 2}
-     }
-     ```
-   - `order` is a dictionary containing product IDs (keys) and quantities ordered (values). Format: `{"P01": 2, "P02": 1}`.
-   - **Validation Phase**: Before modifying any inventory levels:
-     - Check if all ordered keys exist in the catalog. If a product ID does not exist, raise `ProductNotFoundError` with message: `"Product '<product_id>' not found in store catalog."`
-     - Check if the catalog contains sufficient stock for each item ordered. If the ordered quantity exceeds available stock, raise `OutOfStockError` with message: `"Product '<product_id>' is out of stock. Requested: <requested_qty>, Available: <available_stock>."`
-   - **Execution Phase**: If (and only if) all products pass validation:
-     - Deduct the ordered quantities from the stock numbers in the catalog dictionary.
-     - Calculate and return the total cost of the order (float).
-     - If an exception was raised during validation, the catalog must remain completely unchanged.
-
-#### Example Walkthrough
-```python
-catalog = {
-    "P01": {"price": 10.0, "stock": 5},
-    "P02": {"price": 20.0, "stock": 10}
-}
-
-# 1. Successful Order
-total = process_order(catalog, {"P01": 2, "P02": 1})
-# Returns: 40.0
-# Catalog stock changes to: P01 stock = 3, P02 stock = 9
-
-# 2. Failed Order (Triggers Rollback)
-# Current Catalog: {"P01": {"price": 10.0, "stock": 3}, "P02": {"price": 20.0, "stock": 9}}
-try:
-    total = process_order(catalog, {"P01": 2, "P02": 15})
-except OutOfStockError as e:
-    print(e) # Output: Product 'P02' is out of stock. Requested: 15, Available: 9.
-
-# Verify Catalog Stock: P01 must remain at 3 (NOT decreased to 1).
-print(catalog["P01"]["stock"]) # Output: 3
-```
-
----
 
 ## Difficult Assignments
 
