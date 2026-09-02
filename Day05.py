@@ -51,19 +51,19 @@ def validate_academic_email(email):
 
 
 def main():
-    # print(validate_academic_email("arham.khan@cdac.res.in"))  # Output: True
-    # print(validate_academic_email("lisa_stud12@mit.edu"))      # Output: True
-    # # Output: False (invalid suffix)
-    # print(validate_academic_email("vinod@gmail.com"))
-    # # Output: False (contains uppercase letters)
-    # print(validate_academic_email("ALICE@college.edu"))
-    # print(validate_academic_email("bob@mit.edu.com"))
-    # total1 = calculate_cafeteria_bill(100.0)
-    # print(f"{total1=}")
-    # total2 = calculate_cafeteria_bill(
-    #     100.0, 20.0, 30.0, tax_rate=0.08, discount=10.0, delivery_fee=15.0
-    # )
-    # print(f"{total2=}")
+    print(validate_academic_email("arham.khan@cdac.res.in"))  # Output: True
+    print(validate_academic_email("lisa_stud12@mit.edu"))      # Output: True
+    # Output: False (invalid suffix)
+    print(validate_academic_email("vinod@gmail.com"))
+    # Output: False (contains uppercase letters)
+    print(validate_academic_email("ALICE@college.edu"))
+    print(validate_academic_email("bob@mit.edu.com"))
+    total1 = calculate_cafeteria_bill(100.0)
+    print(f"{total1=}")
+    total2 = calculate_cafeteria_bill(
+        100.0, 20.0, 30.0, tax_rate=0.08, discount=10.0, delivery_fee=15.0
+    )
+    print(f"{total2=}")
 
     log_data = """192.168.1.5 - - [28/Aug/2026:10:00:00] "GET /index.html HTTP/1.1" 200 1024
 8.8.8.8 - - [28/Aug/2026:10:10:00] "GET /api/v1/users HTTP/1.1" 200 4096
