@@ -56,6 +56,15 @@ class DeliveryTruck(Vehicle):
         return f"Truck: <{self.make}> <{self.model}> carrying {self.cargo_load} tons"
 
 
+class PriceAmount:
+    def __init__(self,value,currency):
+        self.value = value
+        self.currency = currency
+        pass
+    def __str__(self):
+        return f'<{self.currency}> <{self.value:.2}>'
+        pass
+
 
 def main():
     # Assignment 1
