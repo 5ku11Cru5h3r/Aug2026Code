@@ -1,4 +1,7 @@
 # Assignment 1
+import re
+
+
 class SmartThermostat:
     MIN_TEMP = 10.0
     MAX_TEMP = 35.0
@@ -86,6 +89,38 @@ class PriceAmount:
         return False
 
 # Assignment 4
+
+
+class Paitent:
+    _patient_counter = 0
+
+    @staticmethod
+    def validate_dob_format(dob_str):
+        pattern = re.match(
+            pattern=r"(?P<Year>/d{4,4})\-(?P<Month>/d{2,2})\-(?P<Day>/d{2,2})", string=dob_str)
+        if pattern == None:
+            return False
+        return True
+
+    def __init__(self, name, dob):
+        self.name = name
+        self.dob = dob
+        self.paitent_id = f"PAT-{1000 + Paitent._patient_counter}"
+        Paitent._patient_counter += 1
+
+    @property
+    def dob(self):
+        return self.dob
+
+    @dob.setter
+    def dob(self, value):
+        if Paitent.validate_dob_format(value):
+            self.dob = value
+        else:
+            raise ValueError(
+                f"Invalid date of birth format: '{value}'. Expected YYYY-MM-DD.")
+
+    pass
 
 
 def main():
