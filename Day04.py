@@ -64,11 +64,11 @@ def manage_bookstore_inventory(inventory: dict, action, book_title, quantity=0):
                 inventory.update({book_title: existing_quantity})
                 if existing_quantity == 0:
                     inventory.pop(book_title)
-                print(f"Sold! {book_title =} and {quantity =}")
+                print(f"Sold! {book_title=} and {quantity=}")
             return inventory
 
         case "lookup":
-            print(f"{book_title =} and {existing_quantity=}")
+            print(f"{book_title=} and {existing_quantity=}")
 
 
 class InvalidPhoneNumberError(Exception):
@@ -175,8 +175,6 @@ def compile_feedback(ratings_dict):
     }
     ```
     """
-    
-
 
     result = {}
     for sub, rating in ratings_dict.items():
@@ -208,7 +206,8 @@ class ProductNotFoundError(Exception):
 class OutOfStockError(Exception):
     def __init__(self, quantity=0):
         self.quantity = quantity
-        print(f"The customer's ordered {self.quantity} exceeds the available stock")
+        print(
+            f"The customer's ordered {self.quantity} exceeds the available stock")
 
 
 def process_order(catalog: dict, order: dict):
@@ -342,24 +341,47 @@ def traverse_nested_config(config_dict, path_str, default=None):
 
 
 class AccountNotFoundError(Exception):
+
     def __str__(self, acc):
         return f"Account '{acc}' not found."
+    log_path = ""
 
+    def __init__(self, log_path):
+        OverdraftError.log_path = log_path
+        with open(log_path, "+a") as file:
+            file.write(
+                "`[ROLLBACK] Batch aborted: AccountNotFoundError \n`"
+            )
     ...
 
 
-class OverdraftError(Exception): ...
+class OverdraftError(Exception):
+    log_path = ""
+
+    def __init__(self, log_path,msg):
+        OverdraftError.log_path = log_path
+        with open(log_path, "+a") as file:
+            file.write(
+                "`[ROLLBACK] Batch aborted: OverdraftError \n`"
+            )
+        self.msg=msg
+
+    def __str__(self):
+        return self.msg
+    ...
 
 
 class InvalidTransactionError(Exception):
-    def fileappend(self, log_path):
+    log_path = ""
+
+    def __init__(self, log_path):
+        InvalidTransactionError.log_path = log_path
         with open(log_path, "+a") as file:
-            file.append(
-                "`[ROLLBACK] Batch aborted: InvalidTransactionError  - <Exception Message>\n`"
+            file.write(
+                "`[ROLLBACK] Batch aborted: InvalidTransactionError \n`"
             )
 
-    def invtransaction(self, etype,log_path):
-        self.fileappend(log_path)
+    def invtransaction(self, etype):
         return f"Invalid transaction type '{etype}'"
 
     def positiveAmount(self):
@@ -381,16 +403,17 @@ def process_transaction_batch(accounts: dict, batch_list: list, log_path: string
         curracc_bal = curr_account.get(acc_num)
 
         if curracc_bal is None:
-            raise AccountNotFoundError(acc_num)
+            raise AccountNotFoundError(log_path=log_path,acc=acc_num)
         if re.match(pattern, acc_type) is None:
-            raise InvalidTransactionError.invtransaction(acc_type)
+            raise InvalidTransactionError(log_path=log_path).invtransaction(etype=acc_type)
         if acc_sum <= 0:
-            raise InvalidTransactionError.positiveAmount()
+            raise InvalidTransactionError(log_path=log_path).positiveAmount()
         if (
-            re.match(re.compile(r"^(withdraw)$", re.IGNORECASE), acc_type) is not None
+            re.match(re.compile(r"^(withdraw)$", re.IGNORECASE),
+                     acc_type) is not None
         ) and acc_sum > curracc_bal:
             raise OverdraftError(
-                f"Insufficient funds. Account {acc_num} has balance {curracc_bal}, requested {acc_sum}."
+                msg=f"Insufficient funds. Account {acc_num} has balance {curracc_bal}, requested {acc_sum}.",log_path=log_path
             )
         else:
             if (
@@ -404,10 +427,11 @@ def process_transaction_batch(accounts: dict, batch_list: list, log_path: string
             ):
                 curr_account.update({acc_num: curracc_bal + acc_sum})
     with open(log_path, "+a") as file:
-        file.append(
-            "[SUCCESS] Batch completed. <number_of_transactions> transaction(s) processed.\n"
+        file.write(
+            f"[SUCCESS] Batch completed. {len(batch_list)} transaction(s) processed.\n"
         )
-        ...
+    return curr_account
+    ...
 
     """
         Assignment 6: Atomic Transaction processing with Log Rollback
@@ -483,6 +507,31 @@ def process_transaction_batch(accounts: dict, batch_list: list, log_path: string
 
 
 def main():
+    accounts = {"ACC01": 100.0, "ACC02": 50.0}
+    log_file = "transactions.log"
+
+    # Batch 1: Valid transactions
+    batch_1 = [
+        {"acc": "ACC01", "type": "withdraw", "amt": 30.0},
+        {"acc": "ACC02", "type": "deposit", "amt": 20.0}
+    ]
+    accounts = process_transaction_batch(accounts, batch_1, log_file)
+    # Result: accounts changes to {"ACC01": 70.0, "ACC02": 70.0}
+    # transactions.log writes: "[SUCCESS] Batch completed. 2 transaction(s) processed."
+
+    # Batch 2: Invalid transaction (triggers rollback)
+    batch_2 = [
+        {"acc": "ACC01", "type": "deposit", "amt": 50.0},
+        {"acc": "ACC02", "type": "withdraw", "amt": 200.0}  # Overdraft!
+    ]
+    try:
+        accounts = process_transaction_batch(accounts, batch_2, log_file)
+    except OverdraftError as e:
+        print(f"Caught: {e}")
+
+    # Verify Rollback: ACC01 must remain 70.0, NOT updated to 120.0.
+    print(accounts)  # Output: {"ACC01": 70.0, "ACC02": 70.0}
+    # transactions.log writes: "[ROLLBACK] Batch aborted: OverdraftError - Insufficient funds. Account ACC02 has balance 70.0, requested 200.0."
     # config = {
     #     "server": {
     #         "host": "127.0.0.1",
@@ -536,6 +585,7 @@ def main():
     # except ValueError as e:
     #     print(e)  # Output: Contact name must be a non-empty alphabetic string.
 
+
     # inventory = {"Python Basics": 10, "Learning AI": 5}
     # print(inventory)
     # inventory = manage_bookstore_inventory(inventory, "add", "Python Basics", 5)
@@ -553,7 +603,7 @@ def main():
     #     }
     # result = compile_feedback(feedback_data)
     # print(result)
-    ...
+...
 
 
 """
