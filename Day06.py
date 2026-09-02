@@ -94,6 +94,10 @@ class PriceAmount:
 class Paitent:
     _patient_counter = 0
 
+    @classmethod
+    def get_total_patients(cls):
+        return cls._patient_counter
+
     @staticmethod
     def validate_dob_format(dob_str):
         pattern = re.match(
@@ -105,8 +109,8 @@ class Paitent:
     def __init__(self, name, dob):
         self.name = name
         self.dob = dob
-        self.paitent_id = f"PAT-{1000 + Paitent._patient_counter}"
         Paitent._patient_counter += 1
+        self.paitent_id = f"PAT-{1000 + Paitent._patient_counter}"
 
     @property
     def dob(self):
