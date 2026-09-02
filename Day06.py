@@ -91,7 +91,7 @@ class PriceAmount:
 # Assignment 4
 
 
-class Paitent:
+class Patient:
     _patient_counter = 0
 
     @classmethod
@@ -101,25 +101,26 @@ class Paitent:
     @staticmethod
     def validate_dob_format(dob_str):
         pattern = re.match(
-            pattern=r"(?P<Year>/d{4,4})\-(?P<Month>/d{2,2})\-(?P<Day>/d{2,2})", string=dob_str)
-        if pattern == None:
+            pattern=r"(?P<Year>\d{4})-(?P<Month>\d{2})-(?P<Day>\d{2})", string=dob_str
+        )
+        if pattern is None:
             return False
         return True
 
     def __init__(self, name, dob):
         self.name = name
         self.dob = dob
-        Paitent._patient_counter += 1
-        self.paitent_id = f"PAT-{1000 + Paitent._patient_counter}"
+        Patient._patient_counter += 1
+        self.patient_id = f"PAT-{1000 + Patient._patient_counter}"
 
     @property
     def dob(self):
-        return self.dob
+        return self._dob
 
     @dob.setter
     def dob(self, value):
-        if Paitent.validate_dob_format(value):
-            self.dob = value
+        if Patient.validate_dob_format(value):
+            self._dob = value
         else:
             raise ValueError(
                 f"Invalid date of birth format: '{value}'. Expected YYYY-MM-DD.")
@@ -167,6 +168,19 @@ def main():
         bad_addition = p1 + p3
     except ValueError as e:
         print(e)
+    # Assignment 4
+        # 1. Valid Registration
+    p1 = Patient("Arham Khan", "1999-05-15")
+    print(p1.patient_id)  # Output: PAT-1001
+
+    # 2. Invalid DOB registration (throws ValueError)
+    try:
+        p2 = Patient("Lisa", "12/08/1998")
+    except ValueError as e:
+        # Output: Invalid date of birth format: '12/08/1998'. Expected YYYY-MM-DD.
+        print(e)
+
+    print(Patient.get_total_patients())  # Output: 1
 
 
 main()
