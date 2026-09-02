@@ -28,6 +28,12 @@ def analyze_server_logs(logs_text: str):
     return dict_list
 
 
+def scrape_directory_phones(directory_text):
+    ptr = r"\(?(?P<area_code>[0-9]{3})\)?[- ]?(?P<prefix>[0-9]{3})-?(?P<line_number>[0-9]{4})"
+    matches = re.finditer(ptr, directory_text)
+    return [match.groupdict() for match in matches]
+
+
 def calculate_cafeteria_bill(
     base_price: int, *items, tax_rate=0.05, discount=0.0, delivery_fee=0.0
 ):
@@ -72,6 +78,10 @@ Corrupted log entry here
 172.16.0.4 - - [28/Aug/2026:10:20:00] "POST /login HTTP/1.1" 401 256"""
 
     pprint.pprint(analyze_server_logs(logs_text=log_data))
+
+    directory = "Contact HR at 123-456-7890 or the helpdesk at (987) 654-3210. Direct line is 5558881234."
+
+    pprint.pprint(scrape_directory_phones(directory))
 
 
 main()
