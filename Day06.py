@@ -1,3 +1,4 @@
+# Assignment 1
 class SmartThermostat:
     MIN_TEMP = 10.0
     MAX_TEMP = 35.0
@@ -30,6 +31,7 @@ class SmartThermostat:
     #     self.__appliance_name = args[0]
 
 
+# Assignment 2
 class Vehicle:
     def __init__(self, make: str, model: str, fuel_capacity: float):
         self.make = make
@@ -56,8 +58,9 @@ class DeliveryTruck(Vehicle):
         return f"Truck: <{self.make}> <{self.model}> carrying {self.cargo_load} tons"
 
 
+# Assignment 3
 class PriceAmount:
-    def __init__(self, value, currency:str):
+    def __init__(self, value, currency: str):
         self.value = value
         self.currency = currency.upper()
         pass
@@ -81,6 +84,8 @@ class PriceAmount:
         if (self.value == other.value and self.currency == other.currency):
             return True
         return False
+
+# Assignment 4
 
 
 def main():
