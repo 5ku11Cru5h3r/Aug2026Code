@@ -127,6 +127,89 @@ class Patient:
 
     pass
 
+# Assignment 5
+
+
+class Notifier:
+    def __init__(self, **kwargs):
+        self.sender_id = kwargs.get("sender_id")
+
+    def send(self, message: str):
+        return [f"[Notifier {self.sender_id}] general broadcast: {message}"]
+
+
+class EmailNotifier(Notifier):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.email_server = kwargs.get("email_server")
+
+    def send(self, message):
+        email_log = [f"[Email via {self.email_server}] sending: {message}"]
+        return email_log + super().send(message)
+
+
+class SMSNotifier(Notifier):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.sms_gateway = kwargs.get("sms_gateway")
+
+    def send(self, message):
+        sms_log = [f"[SMS via {self.sms_gateway}] sending: {message}"]
+        return sms_log + super().send(message)
+
+
+class HybridAlertChannel(EmailNotifier, SMSNotifier):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+
+    def send(self, message):
+        return [f"[HYBRID ALERT] Initiating dual channels..."] + super().send(message)
+
+# Assignment 6
+
+
+class DatabaseRecord:
+    def __init__(self, **kwargs):
+        self.record_id = kwargs.get("record_id")
+        self.data = kwargs.get("data")
+
+    def __repr__(self):
+        return f"Record(id=<{self.record_id}>, data=<{self.data}>)"
+
+    def __str__(self):
+        return f"Record(id=<{self.record_id}>, data=<{self.data}>)"
+
+
+class ResultSetIterator:
+    _index_counter = 0
+
+    def __init__(self, **kwargs):
+        records_list = kwargs.get("records_list")
+        if (isinstance(list, records_list) and all(isinstance(r, DatabaseRecord) for r in records_list)):
+            self.records_list = records_list
+        else:
+            raise TypeError(
+                "`records_list` shall be list of `DatabaseRecord` instances")
+        # ResultSetIterator._index_counter += 1
+
+    def __iter__(self):
+        # records_list = self.kwargs.get("records_list")
+        # for i in self.records_list:
+        #     yield i
+        return self
+
+    def __next__(self):
+        if ResultSetIterator._index_counter >= len(self.records_list):
+            raise StopIteration
+        yield self.records_list[ResultSetIterator._index_counter]
+
+        pass
+
+
+class DatabaseResultSet:
+    def __init__(self):
+        pass
+
 
 def main():
     # Assignment 1
@@ -181,6 +264,17 @@ def main():
         print(e)
 
     print(Patient.get_total_patients())  # Output: 1
+
+    print("+"*80)
+
+    # Assignment 5
+    alert = HybridAlertChannel(
+        sender_id="SYS-ADMIN", email_server="smtp.cdac.in", sms_gateway="gw.acts.com")
+
+    logs = alert.send("Disk space 95%")
+
+    for log in logs:
+        print(log)
 
 
 main()

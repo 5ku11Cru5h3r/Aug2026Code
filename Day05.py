@@ -55,8 +55,9 @@ def validate_academic_email(email):
     else:
         return True
 
+
 def process_dataset(dataset):
-    
+
     parsed = map(
         lambda x: (
             x[0],
@@ -67,7 +68,7 @@ def process_dataset(dataset):
     )
 
     filtered = filter(
-        lambda x: x[1]<=1200, parsed
+        lambda x: x[1] <= 1200, parsed
     )
 
     mapped = map(
@@ -78,15 +79,18 @@ def process_dataset(dataset):
         }, filtered
     )
 
-    result = sorted(mapped, key=lambda x:x["score"], reverse=True)
+    result = sorted(mapped, key=lambda x: x["score"], reverse=True)
 
     return result
 
 
 AUDIT_TRANSACTION_COUNT = 0
+
+
 def create_bank_account(owner_name, initial_bal):
-    balance  = float(initial_bal)
+    balance = float(initial_bal)
     history = [f'Acc create with {balance}']
+
     def deposit(amt):
         nonlocal balance
         global AUDIT_TRANSACTION_COUNT
@@ -107,16 +111,17 @@ def create_bank_account(owner_name, initial_bal):
             raise ValueError(f"Insufficient balance")
 
     def get_statment():
-        return(
+        return (
             owner_name,
             balance,
             history.copy()
         )
     return {
-        "deposit" : deposit,
-        "withdraw" : withdraw,
-        "statement" : get_statment
+        "deposit": deposit,
+        "withdraw": withdraw,
+        "statement": get_statment
     }
+
 
 def main():
     pass
@@ -175,7 +180,6 @@ def main():
 #     directory = "Contact HR at 123-456-7890 or the helpdesk at (987) 654-3210. Direct line is 5558881234."
 
 #     pprint.pprint(scrape_directory_phones(directory))
-
 
 
 main()
