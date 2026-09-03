@@ -169,15 +169,17 @@ class HybridAlertChannel(EmailNotifier, SMSNotifier):
 
 
 class DatabaseRecord:
-    def __init__(self, **kwargs):
-        self.record_id = kwargs.get("record_id")
-        self.data = kwargs.get("data")
+    def __init__(self, record_id, data):  # **kwargs):
+        # self.record_id = kwargs.get("record_id")
+        self.record_id = record_id
+        self.data = data
+        # self.data = kwargs.get("data")
 
     def __repr__(self):
-        return f"Record(id=<{self.record_id}>, data=<{self.data}>)"
+        return f"Record(id={self.record_id}, data={self.data})"
 
     def __str__(self):
-        return f"Record(id=<{self.record_id}>, data=<{self.data}>)"
+        return f"Record(id={self.record_id}, data={self.data})"
 
 
 class ResultSetIterator:
@@ -193,7 +195,7 @@ class ResultSetIterator:
         # ResultSetIterator._index_counter += 1
 
     def __iter__(self):
-        # records_list = self.kwargs.get("records_list")
+        records_list = self.kwargs.get("records_list")
         # for i in self.records_list:
         #     yield i
         return self
@@ -206,9 +208,39 @@ class ResultSetIterator:
         return record
 
 
+class RecordNotFoundError(Exception):
+    pass
+
+
 class DatabaseResultSet:
-    def __init__(self):
+    def __len__(self):
+        return len(self.records_list)
         pass
+
+    def __init__(self, data, **kwargs):
+        # records_list = kwargs.get("records_list")
+        records_list = data
+        if (isinstance(records_list, list) and all(isinstance(r, DatabaseRecord) for r in records_list)):
+            self.records_list = records_list
+        else:
+            raise TypeError(
+                "`records_list` shall be list of `DatabaseRecord` instances")
+        pass
+
+    def __getitem__(self, key: int):
+        if isinstance(key, int) and key >= len(self.records_list):
+            raise IndexError("the index is out of bounds")
+        elif isinstance(key, int):
+            return self.records_list[key]
+        elif isinstance(key, str):
+            filtered_records = [
+                x for x in self.records_list if x.data.get('name') == key]
+            if filtered_records:
+                return filtered_records[0]
+            else:
+                # print(self.records_list)
+                raise RecordNotFoundError(
+                    f"Record with name {key!r} not found in database.")
 
 
 def main():
@@ -275,6 +307,38 @@ def main():
 
     for log in logs:
         print(log)
+    print("+"*80)
+
+    # Setup records
+    r1 = DatabaseRecord(101, {"name": "Alice", "role": "Admin"})
+    r2 = DatabaseRecord(102, {"name": "Bob", "role": "User"})
+
+    results = DatabaseResultSet([r1, r2])
+
+    # 1. Length
+    print(len(results))  # Output: 2
+
+    # 2. Integer Indexing
+    print(results[0].data["role"])  # Output: Admin
+
+    # 3. String lookup
+
+    record = results["Bob"]
+    print(record.record_id)  # Output: 102
+
+    # 4. Iteration
+    for rec in results:
+        print(rec.record_id)
+    # Output:
+    # 101
+    # 102
+
+    # 5. Missing key lookup
+    try:
+        missing = results["Charlie"]
+    except RecordNotFoundError as e:
+        print(e)  # Output: Record with name 'Charlie' not found in database.
 
 
-main()
+if __name__ == "__main__":
+    main()
