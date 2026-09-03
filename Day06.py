@@ -204,7 +204,6 @@ class ResultSetIterator:
         record = self.records_list[ResultSetIterator._index_counter]
         ResultSetIterator._index_counter += 1
         return record
-        pass
 
 
 class DatabaseResultSet:
