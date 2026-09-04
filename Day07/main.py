@@ -138,7 +138,7 @@ class UserDatabaseManager:
         with self.conn:
             curse = self.conn.cursor()
             curse.execute(
-                """SELECT (id,username,address,mobile,email) FROM user WHERE id = ?""",
+                """SELECT username,address,mobile,email FROM user WHERE  username = ?""",
                 (username,)
             )
             return curse.fetchone()
@@ -155,9 +155,10 @@ class UserDatabaseManager:
                 ''', (username, address, mobile, email)
             )
             self.conn.commit()
+            return 'UPDATED'
 
     def list_all_users(self):
-        sql = """SELECT (username,address, mobile, email) FROM user ORDER BY username"""
+        sql = """SELECT username,address, mobile, email FROM user ORDER BY username"""
         dictionary = []
         with self.conn:
             curse = self.conn.cursor()
@@ -207,6 +208,7 @@ def main():
     # Update existing user
     status2 = db.add_or_update_user(
         "arham_k", "Bengaluru, KA", "9876543210", "arham@cdac.in")
+    print(status2)  
     db.close()
 
 
