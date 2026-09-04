@@ -3,6 +3,7 @@ import csv
 import json
 from pathlib import Path
 # from pprint import pprint
+import pickle
 import re
 
 
@@ -70,6 +71,31 @@ def process_student_records(input_csv_path=in_path, output_json_path=out_path):
     print(f"Data Saved in {output_json_path}")
 
     ...
+# Assignment 3: Object State Persistence with Pickle
+
+
+class ExperimentSnapshot:
+    def __init__(self, **kwargs):
+        self.experiment_id = kwargs.get("experiment_id")
+        self.model_type = kwargs.get("model_type")
+        self.hyperparameters = kwargs.get("hyperparameters")
+        self.metrics = kwargs.get("metrics")
+
+    def get_best_metric(self, metric_name):
+        return self.metrics.get(metric_name)
+
+    # @classmethod
+
+
+def save_experiment(snapshot: ExperimentSnapshot, file_path):
+    if isinstance(snapshot, ExperimentSnapshot):
+        if not os.path.isfile(file_path):
+            raise FileNotFoundError("Mili nhi file jao file banao")
+        with open(file_path, 'wb') as file:
+            pickle.dump(snapshot, file)
+    else:
+        raise TypeError(
+            "save_experiment(snapshot, file_path)`: Serializes the `ExperimentSnapshot` object to `file_path` in binary mode using `pickle.dump()")
 
 
 def main():
