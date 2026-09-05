@@ -1,3 +1,4 @@
+import datetime
 import sqlite3
 import os
 import csv
@@ -176,6 +177,102 @@ class UserDatabaseManager:
         self.conn.close()
 
 
+class TransactionError(Exception):
+    ...
+
+
+class BankingLedger:
+
+    def __init__(self, db_path):
+        self.conn = sqlite3.connect(db_path)
+        self.conn.row_factory = sqlite3.Row
+        self.create_tables()
+
+    def create_tables(self):
+        with self.conn:
+            curse = self.conn.cursor()
+            curse.execute(
+                '''
+                CREATE TABLE IF NOT EXISTS accounts(
+                account_id TEXT PRIMARY KEY, 
+                holder_name TEXT, 
+                balance REAL
+                );
+                '''
+            )
+            curse.execute(
+                '''
+                CREATE TABLE IF NOT EXISTS audit_log(
+                tx_id INTEGER PRIMARY KEY AUTOINCREMENT, 
+                from_acc TEXT, 
+                to_acc TEXT,
+                amount REAL,
+                timestamp TEXT
+                );
+                '''
+            )
+            self.conn.commit()
+
+    def create_account(self, account_id, holder_name, initial_deposit):
+        if initial_deposit < 0:
+            raise ValueError("initial_deposit Value cant be below 0.00")
+        with self.conn:
+            curse = self.conn.cursor()
+            try:
+                curse.execute(
+                    '''INSERT INTO accounts(account_id, holder_name, balance) VALUES (?,?,?)
+                    ''', (account_id, holder_name, initial_deposit)
+                )
+            except:
+                # might try to recreate
+                ...
+            self.conn.commit()
+
+    def transfer_funds(self, from_acc, to_acc, amount):
+        try:
+            if amount <= 0:
+                raise TransactionError()
+            with self.conn:
+                curse = self.conn.cursor()
+                sql_1 = "SELECT COUNT(DISTINCT account_id)=2 FROM accounts where account_id IN (?,?)"
+                sql_2 = "SELECT balance  FROM accounts where account_id = ?"
+                sql_3 = " UPDATE accounts SET balance = balance + ? WHERE  account_id = ?"
+                sql_4 = " UPDATE accounts SET balance = balance - ? WHERE  account_id = ?"
+                sql_5 = "INSERT INTO audit_log(from_acc,to_acc,amount,timestamp) VALUES (?,?,?,?)"
+                curse.execute(
+                    sql_1, (from_acc, to_acc))
+
+                if curse.fetchone() is None:
+                    raise TransactionError("Account not found")
+
+                curse.execute(
+                    sql_2, (from_acc,))
+                balance = curse.fetchone()
+                if balance["balance"] < amount:
+                    raise TransactionError(
+                        "must have a sufficient balance (>= amount).")
+                curse.execute(sql_3, (amount, to_acc))
+                curse.execute(sql_4, (amount, from_acc))
+                curse.execute(sql_5, (from_acc, to_acc,
+                              amount, datetime.datetime.now()))
+                self.conn.commit()
+
+        except TransactionError as e:
+            print(e)
+            self.conn.rollback()
+
+    def get_balance(self, account_id):
+        sql_2 = "SELECT balance  FROM accounts where account_id = ?"
+        with self.conn:
+            curse = self.conn.cursor()
+            curse.execute(sql_2, (account_id,))
+            balance = curse.fetchone()
+            return balance["balance"]
+
+    def close(self):
+        self.conn.close()
+
+
 def main():
     # print(os.getcwd())
     # process_student_records("students.csv", "summary.json")
@@ -195,21 +292,41 @@ def main():
     # print(restored_exp.model_type)                    # Output: RandomForest
     # print(restored_exp.get_best_metric("accuracy"))   # Output: 0.942
 
-    db = UserDatabaseManager("company.sqlite")
-    status1 = db.add_or_update_user(
-        "arham_k", "Pune, MH", "9876543210", "arham@cdac.in")
+    # db = UserDatabaseManager("company.sqlite")
+    # status1 = db.add_or_update_user(
+    #     "arham_k", "Pune, MH", "9876543210", "arham@cdac.in")
 
-    print(status1)  # Output: INSERTED
+    # print(status1)  # Output: INSERTED
 
-    # Search user
-    user_info = db.find_user("arham_k")
-    print(user_info["email"])  # Output: arham@cdac.in
+    # # Search user
+    # user_info = db.find_user("arham_k")
+    # print(user_info["email"])  # Output: arham@cdac.in
 
-    # Update existing user
-    status2 = db.add_or_update_user(
-        "arham_k", "Bengaluru, KA", "9876543210", "arham@cdac.in")
-    print(status2)  
-    db.close()
+    # # Update existing user
+    # status2 = db.add_or_update_user(
+    #     "arham_k", "Bengaluru, KA", "9876543210", "arham@cdac.in")
+    # print(status2)
+    # db.close()
+    bank = BankingLedger("bank.db")
+
+    bank.create_account("ACC101", "Arham", 5000.0)
+    bank.create_account("ACC102", "Lisa", 2000.0)
+
+    # Valid transfer
+    bank.transfer_funds("ACC101", "ACC102", 1500.0)
+    print(bank.get_balance("ACC101"))  # Output: 3500.0
+    print(bank.get_balance("ACC102"))  # Output: 3500.0
+
+    # Invalid transfer (insufficient funds) -> rolled back
+    try:
+        bank.transfer_funds("ACC101", "ACC102", 10000.0)
+    except TransactionError as e:
+        print(e)  # Output: Insufficient funds in account ACC101
+
+    # Balances remain untouched
+    print(bank.get_balance("ACC101"))  # Output: 3500.0
+    print(bank.get_balance("ACC102"))  # Output: 3500.0
+    bank.close()
 
 
 if __name__ == "__main__":
