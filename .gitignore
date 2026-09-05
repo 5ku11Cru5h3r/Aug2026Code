@@ -2,6 +2,6 @@
 **/.DS_Store
 **/temp
 **/.vscode
-**/20260824-bangalore-python
+#**/20260824-bangalore-python
 sample.py
 transactions.log
