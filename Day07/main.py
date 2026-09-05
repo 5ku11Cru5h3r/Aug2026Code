@@ -241,8 +241,9 @@ class BankingLedger:
                 sql_5 = "INSERT INTO audit_log(from_acc,to_acc,amount,timestamp) VALUES (?,?,?,?)"
                 curse.execute(
                     sql_1, (from_acc, to_acc))
-
-                if curse.fetchone() is None:
+                x = curse.fetchone()
+                # print(x[0])
+                if not x[0]:
                     raise TransactionError("Account not found")
 
                 curse.execute(
@@ -250,12 +251,17 @@ class BankingLedger:
                 balance = curse.fetchone()
                 if balance["balance"] < amount:
                     raise TransactionError(
-                        "must have a sufficient balance (>= amount).")
-                curse.execute(sql_3, (amount, to_acc))
-                curse.execute(sql_4, (amount, from_acc))
-                curse.execute(sql_5, (from_acc, to_acc,
-                              amount, datetime.datetime.now()))
-                self.conn.commit()
+                        f"Insufficient funds in account {from_acc}")
+                try:
+                    curse.execute(sql_3, (amount, to_acc))
+                    curse.execute(sql_4, (amount, from_acc))
+                    curse.execute(sql_5, (from_acc, to_acc, amount,
+                                  str(datetime.datetime.now())))
+                except BaseException as e:
+                    print(e)
+                    self.conn.rollback()
+                else:
+                    self.conn.commit()
 
         except TransactionError as e:
             print(e)
