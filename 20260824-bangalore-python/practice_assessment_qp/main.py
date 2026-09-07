@@ -1,13 +1,13 @@
 products = [ 
     {"id": 1, "name": "Laptop", "category": "Electronics", "price": 55000, "quantity": 10}, 
-    {"id": 3, "name": "Smartphone", "category": "Electronics", "price": 20000, "quantity": 25} ,
-    {"id": 4, "name": "Smartphone", "category": "Electronics", "price": 17800, "quantity": 12} ,
-    {"id": 5, "name": "Smartphone", "category": "Electronics", "price": 31000, "quantity": 3} ,
-    {"id": 2, "name": "Chair", "category": "Furniture", "price": 1500, "quantity": 50} ,
+    {"id": 2, "name": "Smartphone", "category": "Electronics", "price": 20000, "quantity": 25} ,
+    {"id": 3, "name": "Smartphone", "category": "Electronics", "price": 17800, "quantity": 12} ,
+    {"id": 4, "name": "Smartphone", "category": "Electronics", "price": 31000, "quantity": 3} ,
+    {"id": 5, "name": "Chair", "category": "Furniture", "price": 1500, "quantity": 50} ,
     {"id": 6, "name": "Smartphone", "category": "Electronics", "price": 200000, "quantity": 2} ,
 ] 
 
-id_counter = len(products)
+id_counter = 7
 
 #-------------------------------------------------------------------------------------
 
