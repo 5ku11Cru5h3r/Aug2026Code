@@ -2,6 +2,6 @@
 **/.DS_Store
 **/temp
 **/.vscode
-
+**/**.zip
 sample.py
 transactions.log
